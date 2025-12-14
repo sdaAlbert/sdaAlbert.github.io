@@ -34,7 +34,7 @@ author:
   # Academic websites
   academia: # URL
   arxiv: # URL - Update with the correct link to your profile
-  googlescholar: "https://scholar.google.com/"
+  #googlescholar: "https://scholar.google.com/"
   impactstory: # URL
   #orcid: "http://orcid.org/yourorcidurl"
   semantic: # URL
@@ -66,7 +66,7 @@ author:
   medium: # URL
   pinterest: # Username
   soundcloud: # Username
-  steam: davinworf # Username
+  steam: 76561199207168390 # Username
   telegram: # URL
   tumblr: # Username
   twitter: AlbertTang137 # Username for X / Twitter
