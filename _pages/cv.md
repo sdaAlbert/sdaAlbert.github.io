@@ -1,64 +1,49 @@
 ---
 layout: archive
-title: "CV"
+title: "About Me"
 permalink: /cv/
 author_profile: true
 redirect_from:
   - /resume
+  - /about/
+  - /about.html
 ---
 
-{% include base_path %}
+Hi there. This is Albert Tang.
+
+My goal in life—and what drives me—is to make people happy. That is why I am interested in AI for fun and in using AI coding to build infrastructure that ultimately creates delightful experiences for people.
+
+Right now, I am focused on learning and researching AI infrastructure.
 
 Education
 ======
-* Ph.D in Version Control Theory, GitHub University, 2018 (expected)
-* M.S. in Jekyll, GitHub University, 2014
-* B.S. in GitHub, GitHub University, 2012
 
-Work experience
-======
-* Spring 2024: Academic Pages Collaborator
-  * GitHub University
-  * Duties includes: Updates and improvements to template
-  * Supervisor: The Users
+- B.Sc. in Computer Science, Beijing University of Posts and Telecommunications
+- M.Sc. in Computer Science, The University of Tokyo
 
-* Fall 2015: Research Assistant
-  * GitHub University
-  * Duties included: Merging pull requests
-  * Supervisor: Professor Hub
+I have interned at MiraclePlus (formerly YC China) and several AI gaming startups.
 
-* Summer 2015: Research Assistant
-  * GitHub University
-  * Duties included: Tagging issues
-  * Supervisor: Professor Git
-  
-Skills
-======
-* Skill 1
-* Skill 2
-  * Sub-skill 2.1
-  * Sub-skill 2.2
-  * Sub-skill 2.3
-* Skill 3
+Outside of work, I enjoy exploring every form of virtual entertainment—film and television, novels, manga, music, and games. Rather than remaining only a consumer, I prefer to understand these fields from the perspective of creators and the industries behind them. I also make video essays and analyses about them. Everything I learn feeds into my own creative work.
 
-Publications
+If you are into niche IPs and the cultures around them, I would love to hear from you.
+
+Here are some things I believe in
 ======
-  <ul>{% for post in site.publications reversed %}
-    {% include archive-single-cv.html %}
-  {% endfor %}</ul>
-  
-Talks
+
+- There is no ceiling on how far you can go.
+- When you fail, try again—and again.
+- Earth Online is worth playing seriously.
+- Fictional worlds hold immense power and value.
+- The dots in life eventually connect.
+
+Here are some things I like
 ======
-  <ul>{% for post in site.talks reversed %}
-    {% include archive-single-talk-cv.html  %}
-  {% endfor %}</ul>
-  
-Teaching
+
+- Game design, open source, football, drawing, playing the piano, elegant papers, talking with AI, hacking problems from unexpected angles, writing, deep conversations, solo travel, spontaneous challenges, and learning about other people's wonderfully obscure fields that may seem completely useless at first.
+
+Things I don't like
 ======
-  <ul>{% for post in site.teaching reversed %}
-    {% include archive-single-cv.html %}
-  {% endfor %}</ul>
-  
-Service and leadership
-======
-* Currently signed in to 43 different slack teams
+
+- Showing off and unkindness.
+
+[Send me a message—email is always welcome!](mailto:alutreacle@gmail.com)
