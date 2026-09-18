@@ -46,4 +46,4 @@ Things I don't like
 
 - Showing off and unkindness.
 
-[Send me a message—email is always welcome!](mailto:alutreacle@gmail.com)
+Send me a message—email is always welcome: [alutreacle@gmail.com](mailto:alutreacle@gmail.com)
