@@ -84,6 +84,46 @@
   }
 }
 
+/* Minimal date-and-title index used by the blog archive. */
+.blog-index {
+  margin: 1em 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blog-index__item {
+  display: flex;
+  gap: 1.25em;
+  align-items: baseline;
+  padding: 0.35em 0;
+
+  time {
+    flex: 0 0 6.5em;
+    color: var(--global-text-color-light);
+    font-size: $type-size-7;
+    font-variant-numeric: tabular-nums;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+@include breakpoint(max-width $small) {
+  .blog-index__item {
+    display: block;
+
+    time {
+      display: block;
+      margin-bottom: 0.1em;
+    }
+  }
+}
+
 
 /*
    List view
