@@ -1,0 +1,39 @@
+---
+layout: albert
+---
+<section class="hero shell">
+  <p class="eyebrow">你好，我是 Albert <span aria-hidden="true">✦</span></p>
+  <h1>在 AI、游戏与<br><em>人的创造力</em>之间探索。</h1>
+  <p class="hero-intro">我叫唐文柏。这里是我的数字花园：记录正在理解的技术、玩过的游戏，以及那些值得反复琢磨的念头。</p>
+  <div class="hero-links">
+    <a class="primary-link" href="#writing">开始阅读 <span>↓</span></a>
+    <a class="text-link" href="mailto:{{ site.author.email }}">写信给我 ↗</a>
+  </div>
+</section>
+<section class="beliefs shell" aria-labelledby="beliefs-title">
+  <div class="section-label"><span>01</span><h2 id="beliefs-title">我相信</h2></div>
+  <ul class="belief-list">
+    <li><span>好奇心比答案更耐用。</span><small>stay curious</small></li>
+    <li><span>游戏是理解复杂系统的另一种语言。</span><small>play seriously</small></li>
+    <li><span>想法写下来，才真正属于自己。</span><small>write it down</small></li>
+  </ul>
+</section>
+<section class="interests shell" aria-labelledby="interests-title">
+  <div class="section-label"><span>02</span><h2 id="interests-title">此刻关注</h2></div>
+  <div class="interest-cloud" aria-label="兴趣关键词">
+    <span>AI Agents</span><span>Game Design</span><span>Music</span><span>LLMs</span><span>Human × Machine</span><span>Open Source</span>
+  </div>
+</section>
+<section class="writing shell" id="writing" aria-labelledby="writing-title">
+  <div class="section-label"><span>03</span><h2 id="writing-title">最近写作</h2></div>
+  <div class="post-list">
+    {% for post in site.posts limit: 4 %}
+      <a class="post-row" href="{{ post.url | relative_url }}">
+        <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y.%m.%d" }}</time>
+        <div><h3>{{ post.title }}</h3>{% if post.description %}<p>{{ post.description }}</p>{% endif %}</div>
+        <span class="post-arrow" aria-hidden="true">↗</span>
+      </a>
+    {% else %}<p class="empty-state">第一篇文章正在路上。</p>{% endfor %}
+  </div>
+  <a class="all-posts" href="{{ '/blog/' | relative_url }}">查看全部文章 <span>→</span></a>
+</section>

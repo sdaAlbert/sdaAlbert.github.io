@@ -1,19 +1,9 @@
 ---
-layout: archive
-permalink: /year-archive/
-title: "Blog posts"
-author_profile: true
+layout: blog
+permalink: /blog/
+title: "写作"
+description: "不追热点，只记录那些改变了我看待世界方式的想法。关于 AI、游戏、产品与生活。"
 redirect_from:
+  - /year-archive/
   - /wordpress/blog-posts/
 ---
-
-{% include base_path %}
-{% capture written_year %}'None'{% endcapture %}
-{% for post in site.posts %}
-  {% capture year %}{{ post.date | date: '%Y' }}{% endcapture %}
-  {% if year != written_year %}
-    <h2 id="{{ year | slugify }}" class="archive__subtitle">{{ year }}</h2>
-    {% capture written_year %}{{ year }}{% endcapture %}
-  {% endif %}
-  {% include archive-single.html %}
-{% endfor %}
