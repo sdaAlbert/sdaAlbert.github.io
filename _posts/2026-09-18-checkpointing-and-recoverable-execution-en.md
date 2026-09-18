@@ -1,7 +1,6 @@
 ---
 title: "When Agents Cannot Just Move Forward: Runtime Recovery from Coding to Real-Time Systems"
 date: 2026-09-18
-modified: 2026-09-18
 permalink: /posts/checkpointing-and-recoverable-execution/en/
 lang: en
 translations:

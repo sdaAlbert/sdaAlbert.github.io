@@ -1,7 +1,6 @@
 ---
 title: "当 Agent 不能只向前：从代码恢复到实时业务的 Runtime 设计"
 date: 2026-09-18
-modified: 2026-09-18
 permalink: /posts/checkpointing-and-recoverable-execution/
 lang: zh-CN
 translations:
