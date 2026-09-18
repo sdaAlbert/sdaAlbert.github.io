@@ -7,12 +7,12 @@
 # server process.
 
 # Basic Site Settings
-locale: "zh-CN"
+locale: "en-US"
 site_theme: "default"
-title: "Albert Tang"
+title: "A.T.'s blog"
 title_separator: "-"
 name: &name "Albert Tang"
-description: &description "关于 AI、游戏、音乐与创造力的个人笔记。"
+description: &description "now focus on ai and games"
 url: https://sdaalbert.github.io/ # the base hostname & protocol for your site e.g. "https://[your GitHub username].github.io" or if you already have some other page hosted on Github then use "https://[your GitHub username].github.io/[Your Repo Name]"
 baseurl: "" # the subpath of your site, e.g. "/blog"
 repository: "sdaAlbert/sdaAlbert.github.io" # the repository of your site, e.g. "[your GitHub username]/[your Repo Name]"
@@ -229,12 +229,12 @@ defaults:
       path: ""
       type: posts
     values:
-      layout: post
-      author_profile: false
+      layout: single
+      author_profile: true
       read_time: true
-      comments: false
-      share: false
-      related: false
+      comments: true
+      share: true
+      related: true
   # _pages
   - scope:
       path: ""
