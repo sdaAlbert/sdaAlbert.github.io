@@ -13,9 +13,11 @@ redirect_from:
 
 <ul class="blog-index">
   {% for post in site.posts %}
-    <li class="blog-index__item">
-      <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%m-%d-%Y" }}</time>
-      <a href="{{ base_path }}{{ post.url }}">{{ post.title }}</a>
-    </li>
+    {% unless post.lang == "zh-CN" %}
+      <li class="blog-index__item">
+        <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%m-%d-%Y" }}</time>
+        <a href="{{ base_path }}{{ post.url }}">{{ post.title }}</a>
+      </li>
+    {% endunless %}
   {% endfor %}
 </ul>
