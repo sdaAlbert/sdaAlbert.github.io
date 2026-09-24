@@ -19,7 +19,7 @@ Education
 ======
 
 - B.Sc. in Computer Science, Beijing University of Posts and Telecommunications
-- M.Sc. in Computer Science, The University of Tokyo
+- Master's student in the Department of Electrical Engineering and Information Systems (EEIS), Graduate School of Engineering, The University of Tokyo
 
 I have interned at MiraclePlus (formerly YC China) and several AI gaming startups.
 
