@@ -22,7 +22,7 @@ layout: default
       <h1 class="page__title">
         {{ page.title }}
         {% if page.url == "/year-archive/" %}
-          <a href="{% if site.atom_feed.path %}{{ site.atom_feed.path }}{% else %}{{ base_path }}/feed.xml{% endif %}" class="btn archive__rss-button"><i class="fa fa-rss" aria-hidden="true"></i> Subscribe via RSS</a>
+          <a href="{% if site.atom_feed.path %}{{ site.atom_feed.path | absolute_url }}{% else %}{{ '/feed.xml' | absolute_url }}{% endif %}" class="btn archive__rss-button"><i class="fa fa-rss" aria-hidden="true"></i> Subscribe via RSS</a>
         {% endif %}
       </h1>
     {% endunless %}
