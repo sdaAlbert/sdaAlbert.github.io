@@ -83,9 +83,7 @@ The numbers keep getting bigger, so the story has to get bigger too.
 
 “We are infrastructure for the Agent era!”
 
-There is another question that is easy to skip: when users message a hosted Agent, their messages pass through the provider’s infrastructure. Photon’s privacy policy lists TLS, encryption at rest, and access controls. When I checked, I could not find the specifics an employee had described on Reddit—that messages are cached for about a week and employees cannot access them. In a follow-up, the employee said access was restricted through policy and physical separation, rather than Photon being technically incapable of decrypting the messages. [Photon privacy policy](https://app.photon.codes/privacy-policy) · [Reddit discussion](https://www.reddit.com/r/hermesagent/comments/1uayr7v/cybersecurity_for_hermes_ios_ux_imessage_matrix/)
-
-Someone in the thread suggested adding that employee statement to the privacy page. I checked, and as of this article’s publication, it still was not there.
+There is another question that is easy to skip: when users message a hosted Agent, their messages pass through the provider’s infrastructure. Photon’s privacy policy lists TLS, encryption at rest, and access controls. A Reddit user raised the concern that Photon acts as a third-party relay, while its public privacy information did not specify details such as message retention. A Photon employee replied that messages received by Photon are cached for about a week before deletion and that employees cannot access them. When another user asked how that restriction was enforced, the employee said access was limited by internal policies and physical separation, and noted that SMS is not end-to-end encrypted and may be visible. Another participant suggested adding these details to the privacy page; as of publication, they were still absent. [Photon privacy policy](https://app.photon.codes/privacy-policy) · [Reddit discussion](https://www.reddit.com/r/hermesagent/comments/1uayr7v/cybersecurity_for_hermes_ios_ux_imessage_matrix/)
 
 ## Open-source Agent startups: after releasing the code, what do you sell?
 

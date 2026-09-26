@@ -83,9 +83,7 @@ AI 让“能发布的东西”涨得比“有人愿意长期用的东西”更�
 
 “我们是 Agent 时代的基础设施！”
 
-还有一个容易被跳过的问题：用户把消息发给托管 Agent，消息就会经过服务商的基础设施。Photon 的隐私政策列出 TLS、静态加密和访问控制，但我查看时没有找到 Reddit 上员工所说“消息缓存约一周”或“员工无法访问”的具体说明。该员工后续解释，访问限制靠政策和物理隔离，而不是 Photon 在技术上完全没有解密能力。[Photon 隐私政策](https://app.photon.codes/privacy-policy) · [Reddit 讨论](https://www.reddit.com/r/hermesagent/comments/1uayr7v/cybersecurity_for_hermes_ios_ux_imessage_matrix/)
-
-底下别人建议隐私页面加上这句员工发言，我查了一下，到这篇博客写作的现在为止还没加。
+还有一个容易被跳过的问题：用户把消息发给托管 Agent，消息就会经过服务商的基础设施。Photon 的隐私政策列出 TLS、静态加密和访问控制。Reddit 上有用户提出，Photon 作为第三方转发服务，会让消息经过其托管基础设施，而公开隐私说明没有具体交代保留时长等问题。一名 Photon 员工回应称，收到的消息会缓存约一周后删除，员工无法访问。另一位用户追问这种限制如何落实；该员工解释，访问主要由内部政策和物理隔离控制，并提醒 SMS 不具备端到端加密，消息可能被看到。另一位参与者建议把这些说明补进隐私页面；截至发稿时，页面仍未写明。[Photon 隐私政策](https://app.photon.codes/privacy-policy) · [Reddit 讨论](https://www.reddit.com/r/hermesagent/comments/1uayr7v/cybersecurity_for_hermes_ios_ux_imessage_matrix/)
 
 ## 讨论一下开源 Agent 创业：代码放出来以后，究竟卖什么？
 
