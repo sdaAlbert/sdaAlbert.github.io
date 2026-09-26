@@ -9,15 +9,44 @@ redirect_from:
 
 {% include base_path %}
 
+{% assign has_observations = false %}
+{% for post in site.posts %}
+  {% assign post_tags = post.tags | default: empty %}
+  {% if post.lang != "zh-CN" and post_tags contains "Industry Observation" %}
+    {% assign has_observations = true %}
+  {% endif %}
+{% endfor %}
+
 <h2 class="archive__subtitle">Technical</h2>
 
 <ul class="blog-index">
   {% for post in site.posts %}
-    {% unless post.lang == "zh-CN" %}
+    {% assign post_tags = post.tags | default: empty %}
+    {% assign is_observation = false %}
+    {% if post_tags contains "Industry Observation" %}
+      {% assign is_observation = true %}
+    {% endif %}
+    {% if post.lang != "zh-CN" and is_observation == false %}
       <li class="blog-index__item">
         <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%m-%d-%Y" }}</time>
         <a href="{{ base_path }}{{ post.url }}">{{ post.title }}</a>
       </li>
-    {% endunless %}
+    {% endif %}
   {% endfor %}
 </ul>
+
+{% if has_observations %}
+  <h2 class="archive__subtitle">Observation</h2>
+
+  <ul class="blog-index">
+    {% for post in site.posts %}
+      {% assign post_tags = post.tags | default: empty %}
+      {% if post.lang != "zh-CN" and post_tags contains "Industry Observation" %}
+        <li class="blog-index__item">
+          <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%m-%d-%Y" }}</time>
+          <a href="{{ base_path }}{{ post.url }}">{{ post.title }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+{% endif %}
