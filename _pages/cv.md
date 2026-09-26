@@ -30,7 +30,6 @@ If you are into niche IPs and the cultures around them, I would love to hear fro
 Here are some things I believe in
 ======
 
-- There is no ceiling on how far you can go.
 - When you fail, try again—and again.
 - Earth Online is worth playing seriously.
 - Fictional worlds hold immense power and value.
