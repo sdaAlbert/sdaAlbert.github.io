@@ -14,8 +14,6 @@ tags:
   - AI Infrastructure
 ---
 
-# Why Are Agent Model Calls Slow? A First Look at AI Infrastructure Through One Request
-
 After receiving a task, an Agent may first ask a model which tool to call, then ask the model what to do next after getting the tool result. A single task can involve several model requests. So when users say an Agent feels slow, time may be spent waiting in a queue, processing the model input, generating the answer, or executing tools. Following these sources of delay helps explain how inference infrastructure (AI Infra) schedules requests and uses compute and memory—and why open-source systems make different design choices.
 
 ## 1. First, find out where the time goes

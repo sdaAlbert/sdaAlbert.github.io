@@ -14,8 +14,6 @@ tags:
   - LLM Inference
 ---
 
-# Coordinating Data Movement in LLM Inference: A Research Map
-
 When a GPU runs a large language model, where does the data needed for computation come from, and where does it move? Poor placement or timing makes requests wait for data. Moving too much at once can also consume bandwidth or GPU resources needed by computation.
 
 ## 1. What data does an inference request read and write?

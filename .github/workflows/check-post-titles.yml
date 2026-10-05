@@ -1,0 +1,32 @@
+name: Check post titles
+
+on:
+  push:
+    paths:
+      - '_posts/**'
+      - '_layouts/single.html'
+      - 'scripts/check_post_titles.py'
+      - '.github/workflows/check-post-titles.yml'
+  pull_request:
+    paths:
+      - '_posts/**'
+      - '_layouts/single.html'
+      - 'scripts/check_post_titles.py'
+      - '.github/workflows/check-post-titles.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check every published post
+        run: python scripts/check_post_titles.py
