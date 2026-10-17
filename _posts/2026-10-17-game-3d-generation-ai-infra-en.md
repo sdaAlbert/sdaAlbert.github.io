@@ -1,0 +1,120 @@
+---
+title: "What AI Infrastructure Does for Game Companies: Systems Lessons from 3D Generation"
+date: 2026-10-17
+permalink: /posts/game-3d-generation-ai-infra/en/
+lang: en
+translations:
+  zh: /posts/game-3d-generation-ai-infra/
+  en: /posts/game-3d-generation-ai-infra/en/
+author_profile: false
+read_time: true
+excerpt: "A look at public work from Roblox, Tencent Hunyuan, Meshy, NetEase, miHoYo, ByteDance, and Meta, covering GPU execution, sparse geometry, model loading, and end-to-end asset generation."
+tags:
+  - AI Infrastructure
+  - 3D Generation
+---
+
+Game companies use AI in three broad areas. Content production uses models to create concept art, 3D assets, animation, and speech. In-game interaction lets NPCs understand player input and respond in real time. Development and operations use AI for coding assistance, automated testing, customer support, and content moderation.
+
+These applications all need AI infrastructure, but their workloads differ. Content production often involves training large models or generating assets in batches, so GPU throughput, memory use, and cost per generation matter. In-game interaction needs low latency, steady output, and enough capacity for concurrent players. Development and operations tools must handle bursty requests while keeping services available. Infrastructure work spans model training execution, GPU scheduling, model loading, and online inference services.
+
+This article uses 3D generation to examine the content-production workload. In addition to model computation, a 3D pipeline must decode model outputs into meshes, process topology and materials, and prepare assets for import into a game. That pipeline shows how AI infrastructure deals with GPU execution, memory, loading, and post-processing.
+
+## From a prompt to a 3D game asset
+
+After a user provides text or an image, a generative model builds an object in an internal representation and decodes it into a three-dimensional surface. The surface is usually made of vertices, edges, and faces, collectively called a mesh. Topology describes how these elements connect and determines whether a model can be separated into parts, edited, or deformed. A product may also need materials, textures, parts, a skeleton, and collision data before checking that the asset imports correctly and meets project requirements.
+
+Here, 3D AI means generating game assets from text or images. The article covers geometry generation, texture and part processing, and how these steps run during training and inference. The examples are selected from public work by game companies and research that directly affects generation efficiency.
+
+```text
+Text or image → 3D representation → shape and mesh → materials and parts
+              → topology, rigging, or collision → game import and validation
+```
+
+A voxel divides space into a grid of cubes. Doubling resolution along all three axes increases the number of cells eightfold. Sparse representations skip empty locations, though the GPU still has to look up coordinates and access memory. Autoregressive models predict shape elements one at a time, so long sequences increase wait time. Direct mesh generation skips an intermediate conversion but must predict how vertices connect.
+
+## Roblox: tailoring GPU execution to a 3D autoregressive model
+
+Roblox Cube lets creators generate 3D assets for virtual environments from descriptions. It uses two cooperating sequences: one stores the input conditions, while the other generates shape elements step by step. Some attention layers read only the generated shape; others also read the condition sequence. As a result, tensor lengths vary by layer, and the execution framework must support different attention access patterns and tensor shapes at each layer.
+
+Released in 2026, CubePart extends the input with an existing mesh and a description of its parts. It generates a set of semantically separated, composable part meshes intended for use with animation, physics, and behavior scripts. This points to a shift from generating a standalone shape toward assets with part structure, which also adds inspection, assembly, and import work after generation. [Official Roblox Cube repository](https://github.com/Roblox/cube)
+
+Roblox's engineering post first uses CUDA Graphs to reduce CPU launch overhead. A graph records a fixed-shape sequence of GPU operations so it can be replayed as a unit, avoiding repeated CPU launches for small operations. Graph capture requires fixed input shapes, so Roblox standardizes common sizes and prepares execution graphs for each size. The second change adds a KV cache, which stores attention results for generated elements so later steps can reuse them. These changes reduce CPU launch overhead and repeated computation, respectively.
+
+Roblox's engineering post measures a single inference run on one H100: latency per generation step fell from 60.5 milliseconds to 20.5 milliseconds, then to 7.8 milliseconds. The model stage dropped from 31 seconds to 4 seconds; mesh post-processing brings the total to about 7 seconds. [Engineering post](https://about.roblox.com/newsroom/2025/06/accelerating-ai-inference-roblox-3d-creation), [technical report](https://arxiv.org/abs/2503.15475), [official repository](https://github.com/Roblox/cube). A useful reproduction is to run one generation request and compare CPU launch time, GPU idle time, per-step latency, and total generation time with and without CUDA Graphs and KV caching.
+
+## Tencent Hunyuan: finding where 3D inference time goes
+
+FlashVDM turns the model's internal 3D features into an untextured surface. Its pipeline includes diffusion sampling, which repeatedly refines the shape, and volume decoding, which checks whether locations in space belong to the surface. The paper first profiles the baseline and finds that decoding takes about 75.8% of the time, while sampling takes about 23.9%. Even if sampling took no time at all, its estimated overall speedup would be only about 1.32×. Geometry decoding is therefore the first target to optimize.
+
+The team changes volume decoding in stages. It refines locations near the object's surface to reduce the number of 3D coordinates to check. It then uses spatial proximity to select relevant features, so each coordinate does not read the full feature set. Finally, it trains a lighter decoder to reduce the work per query. In the paper's ablation, decoding time falls from 22.33 seconds to 2.322 seconds with hierarchical queries, then to 0.731 and 0.491 seconds with a lightweight decoder and feature selection. These changes co-design the inference path and its computation around the geometry-decoding workload.
+
+On the sampling side, progressive distillation reduces the diffusion process from 50 steps to 5. Distillation trains a smaller model to approximate a larger teacher in fewer steps; simply changing the original model to five steps would reduce quality. On an RTX 4090, the paper reports that untextured shape generation falls from 25.2 seconds to 0.79 seconds, with a slight drop in intersection over union. This model-generation timing excludes texturing, retopology, rigging, and game integration. [ICCV 2025 paper](https://openaccess.thecvf.com/content/ICCV2025/html/Lai_Unleashing_Vecset_Diffusion_Model_for_Fast_Shape_Generation_ICCV_2025_paper.html), [official code](https://github.com/Tencent-Hunyuan/FlashVDM). The infrastructure lesson is to time model loading, sampling, geometry decoding, and mesh export separately, then use the total critical path to choose the next target.
+
+LATTICE, also from Tencent Hunyuan, progressively expands its 3D feature sequence and scales training from 1,024 to 6,144 tokens. The paper reports training a 2-billion-parameter model on 64 GPUs for 24 hours, but does not specify the GPU model or a complete cost breakdown. A reproduction could scale from one GPU to 2, 4, and 8, recording sample throughput, utilization, communication wait, and checkpoint time to see where additional GPUs stop paying off. [CVPR 2026 paper](https://openaccess.thecvf.com/content/CVPR2026/html/Lai_LATTICE_Democratize_High-Fidelity_3D_Generation_at_Scale_CVPR_2026_paper.html), [project page](https://lattice3d.github.io/)
+
+Hunyuan3D Studio connects part generation, polygon-mesh generation, and semantic UV mapping into a workflow for game assets, with optimized geometry and PBR materials as outputs. For infrastructure, this expands the measurement target from a single shape model to a sequence of mesh optimization, UV mapping, and texturing stages. End-to-end task time then reflects how quickly an asset can be delivered. [Hunyuan3D Studio technical report](https://arxiv.org/abs/2509.12815)
+
+## Meshy: generating meshes, organizing geometry, and loading models faster
+
+Meshy T2 turns text or images directly into editable meshes. It predicts vertices and their connections in parallel, using flow matching to move from initial noise toward a shape. This skips the intermediate step of generating a voxel or implicit shape and converting it into a mesh.
+
+T2 also provides an example of GPU data layout. The public paper describes the method without a separate timing result. A point encoder sorts vertices by spatial location and stores nearby points contiguously, reducing scattered reads when the GPU aggregates neighboring vertices. An infrastructure experiment could reproduce this layout and time data organization, neighborhood aggregation, and end-to-end generation separately.
+
+Published T2 speed figures use different measurement setups. A preprint reports a median of 6 seconds for image-to-mesh generation across 115 assets, typically with about 4,000 faces; it does not specify the inference GPU. A product engineering post reports about 1 second of compute and about 2 seconds end to end for an engineering build. Comparisons should align input size, hardware, and timing boundaries, and report model compute separately from end-to-end time. [T2 preprint](https://arxiv.org/html/2607.28675v3), [product engineering post](https://www.meshy.ai/blog/meshy-t2-native-3d-mesh-generation)
+
+Faithful Contouring handles conversion between models and geometry tools. A conventional approach first repairs a mesh into a closed surface, computes distances from the surface throughout 3D space, and extracts a mesh from those distances. This work encodes the mesh directly as sparse voxel anchors and surface features, skipping the intermediate representation. In geometry-conversion tests on one H100, the 512-resolution case uses 43 MB and takes 0.33 seconds; at resolution 2048 it uses 711 MB and takes 4.14 seconds, showing how encoding and decoding costs grow with resolution. [CVPR 2026 paper](https://openaccess.thecvf.com/content/CVPR2026/html/Luo_Faithful_Contouring_Near-Lossless_3D_Voxel_Representation_Free_from_Iso-surface_CVPR_2026_paper.html), [author code](https://github.com/Luo-Yihao/FaithC). This is a useful setting for sweeping resolution and plotting time and memory to identify when geometry preprocessing becomes a bottleneck.
+
+Overmind reduces repeated loading when a pipeline switches models. An art workflow may call several infrequently used models, and if their weights cannot all stay in GPU memory, each switch can require reading from disk, reconstructing tensors, and transferring data to the GPU. Overmind keeps prepared tensors in host memory shared across processes, so cache reuse skips repeated reads and tensor reconstruction. Here, zero-copy means CPU processes share existing host memory; inference still requires transferring the model to the GPU.
+
+In a ControlNet test on Linux with an i9-11900K and RTX 4090, baseline loading takes 6.16 seconds, the first cache fill takes 24.20 seconds, and a later cache hit takes 1.12 seconds, about 5.5× faster than baseline. A warm load still spends 0.87 seconds transferring to the GPU and about 0.20 seconds rebuilding the pipeline. Reproducing the benchmark with different model sizes and reuse counts can show when the cache setup cost pays off. [Meshy engineering post](https://www.meshy.ai/blog/fast-ml-model-loading-overmind), [open-source code and benchmark](https://github.com/meshy-dev/overmind)
+
+## NetEase Fuxi: turning generation into game-character parameters
+
+NetEase Fuxi's EasyCraft maps a player's photo to existing face-customization parameters in *Justice Online Mobile* and *Naraka: Bladepoint Mobile*. It freezes a pretrained image encoder and trains a small converter for each game, using images rendered from the games' own customization parameters as training data. On 1,000 photos with varied styles, average inference on an RTX 4090 takes 0.026 seconds; the F2P baseline takes 1.140 seconds, while F2P v2 takes 0.007 seconds. For infrastructure, this lightweight prediction shifts attention toward service integration: connecting the editor, validating parameters, and handling timeouts and failures. [CVPR 2025 paper](https://openaccess.thecvf.com/content/CVPR2025/papers/Wang_EasyCraft_A_Robust_and_Efficient_Framework_for_Automatic_Avatar_Crafting_CVPR_2025_paper.pdf)
+
+## Tripo and VAST: why high-resolution shapes need sparse computation
+
+SparseFlex (ICCV 2025) preserves high-resolution geometry with sparse voxels near the surface, pruning regions without a surface as resolution increases. A regular voxel grid allocates locations across the entire cube, so empty space outside the object also consumes memory. Sparse representations skip those locations, while still requiring coordinate and neighborhood lookups for active voxels.
+
+SparseFlex's public materials focus on geometry representation and mesh reconstruction. The official code demonstrates sparse-voxel encoding and mesh reconstruction; one configuration for reconstructing a 1024³ grid requires about 12 GB of memory. [Project page](https://xianglonghe.github.io/TripoSF/), [official repository](https://github.com/VAST-AI-Research/TripoSF). An infrastructure study can time indexing, neighbor queries, and feature computation separately, then plot end-to-end performance across sparsity levels and resolutions to find where sparse representation pays off.
+
+## miHoYo: from one image to an assembled scene
+
+Wonder3D, co-authored by Cheng Lin, formerly a graphics AI lead at miHoYo, received a CVPR 2024 Highlight. Given an object image, it generates consistent multi-view normal and color maps, then fuses them into a textured mesh. The project page reports about 2–3 minutes per asset. The pipeline has diffusion-generation and mesh-extraction stages, which can be timed separately to see how image resolution and view count affect end-to-end latency. [Wonder3D paper and code](https://github.com/xxlong0/Wonder3D), [CVPR paper](https://openaccess.thecvf.com/content/CVPR2024/html/Long_Wonder3D_Single_Image_to_3D_using_Cross-Domain_Diffusion_CVPR_2024_paper.html), [Cheng Lin's profile and papers](https://clinplayer.github.io/)
+
+Zhongshuo Du, formerly a graphics algorithm researcher on miHoYo's Lumi team, describes a concept-image-to-scene workflow on his project page. It detects objects and estimates depth, aligns coordinates, retrieves 3D assets, then places them with Blender scripts. When a suitable asset is missing, the workflow calls a 3D generator. Another project processes rough meshes from CLAY in chunks and repairs their topology for downstream production. [Du's project notes](https://dosuremaker.github.io/)
+
+These workflows turn a single-model workload into alternating stages of vision, asset retrieval, mesh processing, and scene assembly. Infrastructure can measure GPU and CPU time, peak memory, and intermediate-file size at each stage, then decide how to keep models resident, parallelize tasks, and retry failures.
+
+## ByteDance Seed: extending generation to simulation-ready 3D assets
+
+Seed3D 2.0, from ByteDance Seed, presents joint generation of geometry, materials, parts, and joints. It also uses sparse queries, hierarchical pruning, and mesh simplification to reduce computation. A multi-stage benchmark could time and measure memory for each output type to see how combinations affect single-GPU concurrency. [Seed3D 2.0 technical report](https://arxiv.org/html/2605.13862v1)
+
+## Meta Reality Labs: accelerating generation and asset post-processing together
+
+AssetGen turns one reference image into a textured mesh with a polygon count suited to real-time rendering. On H100, the high-quality path takes about 30 seconds and the faster variant about 14 seconds. The speed comes from a co-optimized pipeline: GPU-based geometry simplification, cleanup, UV unwrapping, and normal baking; model distillation, kernel and precision optimization; and overlapping CPU, GPU, and I/O stages. The team reports reducing a fixed-sample MeshGen path from 103.15 seconds to 12.25 seconds through successive optimizations. The infrastructure lesson is to optimize along the critical path and run generation and post-processing stages in parallel where possible. [AssetGen technical report](https://arxiv.org/abs/2605.26137)
+
+## Research directions for 3D-generation infrastructure
+
+Recent work points to three infrastructure research areas: reducing repeated computation, improving GPU execution for sparse data, and allocating resources based on asset size. These mechanisms begin inside the model and must ultimately be evaluated with end-to-end service metrics.
+
+**The first direction is reducing repeated computation.** Hash3D (CVPR 2025) studies view-by-view optimization for text-to-3D generation. The same object can trigger similar image-feature computations at nearby camera angles and adjacent denoising steps. Hash3D uses spatial hashing to cache and reuse those features, reporting speedups of about 1.5× to 4× across different methods. A reproduction should track cache hit rate, memory use, invalidation-check cost, and end-to-end time to measure the net savings after cache management.[Hash3D, CVPR 2025](https://openaccess.thecvf.com/content/CVPR2025/html/Yang_Hash3D_Training-free_Acceleration_for_3D_Generation_CVPR_2025_paper.html)
+
+Fast3Dcache (CVPR 2026) adapts caching to sparse-voxel generation. It assigns cache budgets based on how voxel positions stabilize during denoising, then chooses reusable features according to how quickly they change. On TRELLIS and DSO with one RTX 4090, the paper reports up to 27.12% faster inference and 54.83% fewer FLOPs, alongside a 2.48% increase in Chamfer Distance and a 1.95% decline in F-Score. Because cache errors can affect geometric consistency, the method designs the cache around the 3D representation. [Fast3Dcache, CVPR 2026](https://openaccess.thecvf.com/content/CVPR2026/html/Yang_Fast3Dcache_Training-free_3D_Geometry_Synthesis_Acceleration_CVPR_2026_paper.html)
+
+FlashVDM, covered in the Tencent Hunyuan section, shows how to profile sampling and geometry decoding separately and focus optimization on the stage that dominates time.
+
+**Another direction is shortening serial steps in mesh generation.** Autoregressive mesh models predict vertices and faces one after another, with each token depending on previous results. Larger meshes therefore take longer. MeshFlow (CVPR 2026) compresses a mesh into a more compact continuous representation, then generates vertices and edges in parallel; the paper reports sampling 26× faster than the fastest autoregressive generator at the time. FlashMesh keeps step-by-step generation but drafts several future tokens in parallel, corrects geometric relations, and verifies them with the main model, reporting up to 2× speedup. The two methods reduce serial work in different ways and show how model structure and execution strategy jointly determine generation speed. [MeshFlow, CVPR 2026](https://openaccess.thecvf.com/content/CVPR2026/html/Li_MeshFlow_Efficient_Artistic_Mesh_Generation_via_MeshVAE_and_Flow-based_Diffusion_CVPR_2026_paper.html), [FlashMesh, CVPR 2026](https://openaccess.thecvf.com/content/CVPR2026/html/Shen_FlashMesh_Faster_and_Better_Autoregressive_Mesh_Synthesis_via_Structured_Speculation_CVPR_2026_paper.html)
+
+MeshMosaic from the same conference scales artist-mesh generation beyond 100,000 faces. It splits a mesh into local patches, generates them separately, and joins them through shared boundaries. This creates execution questions for infrastructure: can patches be generated in parallel, how much time goes to boundary checks and joining, and how does memory grow with mesh size? [MeshMosaic, CVPR 2026](https://openaccess.thecvf.com/content/CVPR2026/html/Xu_MeshMosaic_Scaling_Artist_Mesh_Generation_via_Local-to-Global_Assembly_CVPR_2026_paper.html)
+
+**The second direction is GPU execution for sparse data.** SparseFlex and TRELLIS.2 both rely on sparse 3D data. TRELLIS.2 uses O-Voxel to represent geometry and materials, alongside the FlexGEMM sparse-convolution backend. The backend avoids expanding sparse data into a large intermediate matrix and reports about 2× speedup on some FP16 and TF32 operator benchmarks on A100. Follow-up tests could time coordinate lookup, neighborhood queries, operators, and end-to-end execution at different sparsity levels to see when local speedups improve overall performance. [TRELLIS.2, CVPR 2026](https://openaccess.thecvf.com/content/CVPR2026/html/Xiang_Native_and_Compact_Structured_Latents_for_3D_Generation_CVPR_2026_paper.html), [FlexGEMM project notes](https://jeffreyxiang.github.io/en/blogs/flexgemm)
+
+**The third direction is scheduling by workload.** TRELLIS supports different outputs, including meshes and 3D Gaussians, while SAR3D reports about 0.82 seconds to generate one sample on an A6000. Input scale, target quality, and output type all change memory and compute demands. They provide a basis for testing how request bucketing affects throughput, p95 latency, and peak memory. [TRELLIS, CVPR 2025](https://openaccess.thecvf.com/content/CVPR2025/html/Xiang_Structured_3D_Latents_for_Scalable_and_Versatile_3D_Generation_CVPR_2025_paper.html), [SAR3D, CVPR 2025](https://openaccess.thecvf.com/content/CVPR2025/html/Chen_SAR3D_Autoregressive_3D_Object_Generation_and_Understanding_via_Multi-scale_3D_CVPR_2025_paper.html)
+
+## Conclusion: from speeding up one stage to the full generation pipeline
+
+These works point to distinct bottlenecks. Diffusion models repeat similar computations, which caching can reduce. Sparse voxels make it harder for regular GPU operators to stay busy, calling for changes to data structures and kernels. Autoregressive mesh generation is limited by sequential dependencies, which can be reduced through compact representations, parallel prediction, or patch-based generation. Complete assets also pass through geometry and material processing, so the service must account for the full sequence of stages. Infrastructure research needs to measure each stage's time, memory, and resource use, then determine whether an optimization improves end-to-end generation and concurrency cost.
+
+Research should start by profiling the workload and its bottlenecks, then choose whether to optimize sampling, geometry decoding, sparse access, model loading, or asset post-processing. A promising direction is to let request size and output type inform execution strategy, and to evaluate quality, per-stage time, end-to-end latency, peak memory, and concurrency cost together. That makes it possible to tell whether a local speedup improves the actual generation experience.
