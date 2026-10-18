@@ -1,5 +1,5 @@
 ---
-title: "A Voodoo Doll's Guide to Landing an AI Infra Job"
+title: "Guide Voodoo Doll: Landing an AI Infra Job"
 date: 2026-09-30
 permalink: /posts/ai-infra-job-guide/en/
 lang: en
