@@ -37,7 +37,9 @@ EdenLive 接收游戏程序输出的简化画面、指定视觉风格的首帧�
 
 同一份运行记录里的 27.87 FPS 只计模型生成：12 帧耗时约 430 毫秒。浏览器渲染和 JPEG 编码这 12 张参考画面还要约 100 至 123 毫秒，代码将采集安排在模型工作期间，尽量隐藏这段开销。它也让预览画面和模型输入共用同一次渲染，避免两边拿到不同的游戏状态。容器若没启用 NVIDIA 图形驱动，Chromium 会退回软件渲染，采集时间便可能从隐藏的工作变成新的瓶颈。[采集计时与 GPU 渲染说明](https://github.com/VAST-AI-Research/EdenLive/blob/main/realtime/integrations_v2/eden/apps/game2v/README.md)
 
-这一路线的 Infra 工作落在程序和模型的接缝：给输入事件、游戏状态、参考帧和输出帧关联时间戳；决定视频块提前采集多少；限制播放缓冲积压；把浏览器图形渲染也纳入 GPU 性能剖析。要验证一次优化，应记录按键到对应画面真正显示的时间，以及连续播放时的卡顿分布。模型阶段的 FPS 只能解释这条链路中的一段。
+EdenLive 还公开了模型侧的单卡推理加速方案。项目文档中的 LightX2V 用低比特量化缩小模型权重，用融合 GPU 算子减少中间数据搬运，并优化模型保存历史特征的键值缓存（KV cache）；`torch.compile` 和 CUDA Graphs 则减少重复执行的开销。流式 LightTAE 解码让生成帧尽早交给播放器。文档报告，5B 模型在单张 RTX 5090、1280×704 下达到约 24.7 FPS 的推理吞吐，满足 24 FPS 播放的产帧要求。[EdenLive 的 LightX2V 实时推理配置](https://github.com/VAST-AI-Research/EdenLive#real-time-inference-with-lightx2v-on-rtx-5090)
+
+EdenLive 展示了两层 Infra 工作：模型侧要及时产出可播放的帧，服务侧要让游戏输入、参考画面、生成结果和播放器对齐。前者可看模型吞吐，后者应看按键到对应画面真正显示的时间和连续播放时的卡顿。浏览器渲染、视频块采集与播放缓冲都要纳入这条端到端链路。
 
 ## 显式三维场景：MoVerse 把回访记忆放进可渲染的几何 {#geometry}
 
