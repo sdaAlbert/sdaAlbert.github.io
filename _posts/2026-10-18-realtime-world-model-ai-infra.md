@@ -1,5 +1,5 @@
 ---
-title: "交互式视频生成的 AI Infra：延迟、场景记忆与多用户服务"
+title: "交互式视频生成（世界模型）的 AI Infra：延迟、场景记忆与多用户服务"
 date: 2026-10-18
 permalink: /posts/realtime-world-model-ai-infra/
 lang: zh-CN

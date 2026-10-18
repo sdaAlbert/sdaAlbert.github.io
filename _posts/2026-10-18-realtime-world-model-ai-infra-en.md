@@ -1,5 +1,5 @@
 ---
-title: "Infrastructure for Interactive Video Generation: Latency, Scene Memory, and Multi-User Serving"
+title: "Infrastructure for Interactive Video Generation (World Models): Latency, Scene Memory, and Multi-User Serving"
 date: 2026-10-18
 permalink: /posts/realtime-world-model-ai-infra/en/
 lang: en
